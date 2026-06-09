@@ -57,6 +57,9 @@ def diagnosis_to_svg(diag: Diagnosis) -> str:
     return _frame(title, axes + poly + dots + labels)
 
 
+_NON_CLAIM = "realized-sample diversity only; does not estimate population diversity"
+
+
 def _frame(title: str, body: str) -> str:
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{_W}" height="{_H}" '
@@ -64,6 +67,8 @@ def _frame(title: str, body: str) -> str:
         f'<rect width="{_W}" height="{_H}" fill="white"/>'
         f'<text x="{_PAD}" y="28" font-family="sans-serif" font-size="16" '
         f'font-weight="bold">{_esc(title)}</text>'
+        f'<text x="{_PAD}" y="44" font-family="sans-serif" font-size="10" '
+        f'fill="#777">{_esc(_NON_CLAIM)}</text>'
         f"{body}</svg>\n"
     )
 

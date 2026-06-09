@@ -4,10 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from collections.abc import Sequence
 
 from . import __version__
+
+
+def _fmt_ci(lo: float, hi: float) -> str:
+    """Format a bootstrap CI; NaN endpoints (no trend / <3 generations) render as ``n/a``."""
+    if math.isnan(lo) or math.isnan(hi):
+        return "CI=n/a"
+    return f"CI=[{lo:.4f},{hi:.4f}]"
 
 
 def _cmd_diagnose(args: argparse.Namespace) -> int:
@@ -31,7 +39,7 @@ def _cmd_diagnose(args: argparse.Namespace) -> int:
         write_svg(diag, args.svg)
 
     if args.json:
-        print(json.dumps(payload, indent=2, sort_keys=True))
+        print(json.dumps(payload, indent=2, sort_keys=True, allow_nan=False))
     else:
         print(f"verdict: {diag.verdict}")
         print(f"trend_available: {diag.trend_available} ({diag.generation_source})")
@@ -40,7 +48,7 @@ def _cmd_diagnose(args: argparse.Namespace) -> int:
             print(
                 f"  [{res.featurizer}] {res.verdict}  "
                 f"hill_q1_slope={res.hill_q1_slope:+.4f} "
-                f"CI=[{lo:.4f},{hi:.4f}]  coverage_valid={res.coverage_valid_fraction:.2f}"
+                f"{_fmt_ci(lo, hi)}  coverage_valid={res.coverage_valid_fraction:.2f}"
             )
         if diag.genealogy.available:
             print(

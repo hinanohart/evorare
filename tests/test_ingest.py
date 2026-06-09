@@ -72,3 +72,13 @@ def test_score_bool_rejected(tmp_path):
     p.write_text('{"id":"a","code":"x","score":true}\n', encoding="utf-8")
     with pytest.raises(ContractError):
         load_archive(p)
+
+
+def test_score_non_finite_rejected(tmp_path):
+    # json.loads accepts the non-standard tokens Infinity/NaN; the contract must reject them
+    # rather than let a non-finite score propagate into the diagnosis and the JSON report.
+    for tok in ("Infinity", "-Infinity", "NaN"):
+        p = tmp_path / f"bad_{tok}.jsonl"
+        p.write_text(f'{{"id":"a","code":"x","score":{tok}}}\n', encoding="utf-8")
+        with pytest.raises(ContractError):
+            load_archive(p)

@@ -1,8 +1,9 @@
 import json
+import math
 
 import pytest
 
-from evorare.cli import main
+from evorare.cli import _fmt_ci, main
 from evorare.synth import generate
 
 
@@ -45,6 +46,12 @@ def test_cli_diagnose_json_stdout(tmp_path, capsys):
     assert rc == 0
     captured = capsys.readouterr()
     assert json.loads(captured.out)["verdict"] == "HEALTHY"
+
+
+def test_fmt_ci_nan_renders_na():
+    assert _fmt_ci(math.nan, math.nan) == "CI=n/a"
+    assert _fmt_ci(0.5, math.nan) == "CI=n/a"
+    assert _fmt_ci(0.1, 0.2) == "CI=[0.1000,0.2000]"
 
 
 def test_cli_version():

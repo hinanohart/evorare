@@ -21,8 +21,8 @@ No model calls. No GPU. Core dependency: **numpy** only.
 ## Install
 
 ```bash
-pip install evorare            # core (numpy only)
-pip install "evorare[bench]"   # + optional framework adapters
+pip install evorare            # core (numpy only); the convert adapters are built in
+pip install "evorare[embed]"   # + optional semantic-embedding featurizer (experimental)
 ```
 
 ## Usage
@@ -53,7 +53,7 @@ Required fields: `id`, `code`, `score`. Optional: `generation`, `parent_id`, `is
 ### Validation on synthetic ground truth
 
 All numbers below are produced by `evorare gate` / `python scripts/run_bench.py` and stored in
-[`results/v0.1.0a1_metrics.json`](results/v0.1.0a1_metrics.json) (seed=0, 20 seeds/scenario,
+[`results/v0.1.0a2_metrics.json`](results/v0.1.0a2_metrics.json) (seed=0, 20 seeds/scenario,
 8 generations, 120-resample bootstrap). They are **synthetic** ground-truth checks, not real
 framework results.
 
@@ -65,7 +65,7 @@ framework results.
 | G8 — exclude coverage when selection breaks it (S-AGGREGATED) | **1.00** |
 | G8 — false exclusion under uniform sampling (S-NULL) | **0.00** |
 
-The test suite has **89 tests** (`pytest`), all passing on Ubuntu and Windows for Python
+The test suite has **93 tests** (`pytest`), all passing on Ubuntu and Windows for Python
 3.10–3.12.
 
 > The Hill q1 *slope* point estimate is a plug-in value; its confidence interval is a bootstrap
