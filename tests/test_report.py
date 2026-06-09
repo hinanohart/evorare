@@ -56,3 +56,9 @@ def test_write_svg(tmp_path):
     p = tmp_path / "r.svg"
     write_svg(d, p)
     assert p.read_text(encoding="utf-8").startswith("<svg")
+
+
+def test_svg_carries_non_claim():
+    d, _ = _diag()
+    svg = diagnosis_to_svg(d)
+    assert "does not estimate population diversity" in svg

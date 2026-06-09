@@ -2,7 +2,8 @@
 
 Primary signals are the generation trend of the **Hill q1 effective number** and **Rao Q**
 (CHANGE#1: coverage is never a sole stopping signal). Slopes carry bootstrap confidence
-intervals. Behaviour and AST resolutions must agree, else the verdict is INDETERMINATE. When
+intervals. A *directional conflict* between resolutions (one HEALTHY while another SATURATING)
+yields INDETERMINATE; a merely inconclusive resolution does not veto a decisive one. When
 ``parent_id`` is present, a significant lineage-survivorship decline yields GENEALOGY-COLLAPSE.
 Under an insertion-order generation proxy, no trend is claimed (CHANGE#6) and the verdict is
 DESCRIPTIVE.
@@ -22,7 +23,7 @@ from .diversity import (
     sample_coverage,
 )
 from .featurize import DEFAULT_FEATURIZERS, distance_matrix, get_featurizer, summarize_sample
-from .genealogy import GenealogyResult, compute_genealogy, compute_root_map
+from .genealogy import GenealogyResult, build_genealogy
 from .sampling_validity import route_estimators
 from .schema import Archive, ArchiveRecord
 
@@ -190,7 +191,7 @@ def _diagnose_resolution(
 
 
 def _genealogy_decline(
-    archive: Archive,
+    rootmap: dict[str, str],
     by_gen: dict[int, list[ArchiveRecord]],
     gens: list[int],
     rng: np.random.Generator,
@@ -198,7 +199,6 @@ def _genealogy_decline(
     threshold: float,
 ) -> tuple[bool, tuple[float, float], int | None]:
     """Bootstrap the lineage-survivorship slope; return (collapse, slope_ci, bottleneck_gen)."""
-    rootmap = compute_root_map(list(archive.records))
     gen_ids = {g: [r.id for r in by_gen[g]] for g in gens}
     lg = np.array([len({rootmap[i] for i in gen_ids[g]}) for g in gens], dtype=np.float64)
     x = np.arange(len(gens), dtype=np.float64)
@@ -275,13 +275,13 @@ def diagnose(
         directional = {r.verdict for r in resolutions if r.verdict in (HEALTHY, SATURATING)}
         overall = directional.pop() if len(directional) == 1 else INDETERMINATE
 
-    genealogy = compute_genealogy(list(archive.records))
+    genealogy, rootmap = build_genealogy(list(archive.records))
     collapse = False
     gslope_ci: tuple[float, float] = (float("nan"), float("nan"))
     bottleneck: int | None = None
     if genealogy.available:
         collapse, gslope_ci, bottleneck = _genealogy_decline(
-            archive, by_gen, gens, rng, n_boot, collapse_threshold
+            rootmap, by_gen, gens, rng, n_boot, collapse_threshold
         )
         if collapse and trend:
             overall = GENEALOGY_COLLAPSE

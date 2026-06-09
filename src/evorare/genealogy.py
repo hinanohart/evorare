@@ -10,9 +10,10 @@ two exact descriptors:
   * genealogical mean pairwise distance ``MPD`` — the mean parent-hop distance between the most
     recent individuals, via their lowest common ancestor (it falls as ancestry concentrates).
 
-All ancestor walks are iterative (no recursion) to stay safe on deep genealogies, and cycles are
-guarded. This module activates only when ``parent_id`` is present (otherwise it skips, never
-fabricating links).
+All ancestor walks are iterative (no recursion) to stay safe on deep genealogies; a generation-
+ordered archive is acyclic, but a pathological cycle is broken to guarantee termination (the
+resulting depth/LCA values for such malformed input are then unspecified, not meaningful). This
+module activates only when ``parent_id`` is present (otherwise it skips, never fabricating links).
 """
 
 from __future__ import annotations
@@ -123,25 +124,28 @@ def compute_root_map(records: Sequence[ArchiveRecord]) -> dict[str, str]:
     return {r.id: forest.root(r.id) for r in records}
 
 
-def compute_genealogy(records: Sequence[ArchiveRecord]) -> GenealogyResult:
-    """Compute lineage survivorship and recent genealogical MPD from parent links."""
+def build_genealogy(
+    records: Sequence[ArchiveRecord],
+) -> tuple[GenealogyResult, dict[str, str]]:
+    """Build the parent forest once; return the GenealogyResult and the id->root map.
+
+    Sharing a single forest avoids walking the parent links twice when both the survivorship
+    descriptors and the bootstrap (which needs the root map) are computed for one archive.
+    """
     has_parent = any(r.parent_id is not None for r in records)
     if not has_parent:
-        return GenealogyResult(available=False, reason="no parent_id present")
+        return GenealogyResult(available=False, reason="no parent_id present"), {}
 
     forest = _build_forest(records)
+    rootmap = {r.id: forest.root(r.id) for r in records}
 
     by_gen: dict[int, list[str]] = {}
     for r in records:
         g = r.generation if r.generation is not None else 0
         by_gen.setdefault(g, []).append(r.id)
 
-    survivorship: list[tuple[int, int]] = []
-    for g in sorted(by_gen):
-        roots = {forest.root(rid) for rid in by_gen[g]}
-        survivorship.append((g, len(roots)))
-
-    all_roots = {forest.root(r.id) for r in records}
+    survivorship = [(g, len({rootmap[rid] for rid in by_gen[g]})) for g in sorted(by_gen)]
+    all_roots = set(rootmap.values())
     max_depth = max((forest.depth(r.id) for r in records), default=0)
 
     latest_gen = max(by_gen)
@@ -154,10 +158,16 @@ def compute_genealogy(records: Sequence[ArchiveRecord]) -> GenealogyResult:
                 dists.append(d)
     mpd = float(sum(dists) / len(dists)) if dists else 0.0
 
-    return GenealogyResult(
+    result = GenealogyResult(
         available=True,
         survivorship=tuple(survivorship),
         mpd_recent=mpd,
         n_roots=len(all_roots),
         max_depth=max_depth,
     )
+    return result, rootmap
+
+
+def compute_genealogy(records: Sequence[ArchiveRecord]) -> GenealogyResult:
+    """Compute lineage survivorship and recent genealogical MPD from parent links."""
+    return build_genealogy(records)[0]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the sensitivity gates at the canonical config and write the metrics file.
 
-Writes results/v0.1.0a1_metrics.json with an env stamp, the per-gate pass booleans, parsed
+Writes results/v0.1.0a2_metrics.json with an env stamp, the per-gate pass booleans, parsed
 headline numbers, and the test count. README numbers are generated from this file (S5); no
 hand-written numbers exist before this runs.
 """
@@ -85,7 +85,7 @@ def main() -> int:
         "real_archive_smoke": False,
     }
 
-    out = ROOT / "results" / "v0.1.0a1_metrics.json"
+    out = ROOT / "results" / "v0.1.0a2_metrics.json"
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(metrics, indent=2, sort_keys=True), encoding="utf-8")
     print(f"wrote {out}")

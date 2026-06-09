@@ -27,7 +27,7 @@ class BehaviorFeaturizer(Featurizer):
     def featurize(self, rec: ArchiveRecord) -> int:
         if rec.score is None:
             raise ValueError("BehaviorFeaturizer requires a score")
-        q = round(float(rec.score), self.ndigits)
+        q = round(float(rec.score), self.ndigits) + 0.0  # + 0.0 collapses -0.0 -> 0.0
         return stable_int(f"behavior:{q:.{self.ndigits}f}")
 
     def descriptor(self, rec: ArchiveRecord) -> NDArray[np.float64]:

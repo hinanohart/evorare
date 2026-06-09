@@ -10,6 +10,7 @@ Degrade rules (machine, no fabrication):
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
@@ -36,6 +37,8 @@ def _coerce_record(obj: dict[str, object], lineno: int) -> ArchiveRecord:
         if isinstance(score_raw, bool) or not isinstance(score_raw, (int, float)):
             raise ContractError(f"line {lineno}: 'score' must be a number")
         score = float(score_raw)
+        if not math.isfinite(score):
+            raise ContractError(f"line {lineno}: 'score' must be finite (got {score_raw!r})")
 
     gen_raw = obj.get("generation")
     generation: int | None = None

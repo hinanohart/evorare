@@ -100,9 +100,9 @@ def _pytest() -> bool:
 
 
 def s4() -> bool:
-    mpath = ROOT / "results" / "v0.1.0a1_metrics.json"
+    mpath = ROOT / "results" / "v0.1.0a2_metrics.json"
     if not mpath.exists():
-        print("  results/v0.1.0a1_metrics.json missing")
+        print("  results/v0.1.0a2_metrics.json missing")
         return False
     m = json.loads(mpath.read_text(encoding="utf-8"))
     gates = m.get("gates", {})

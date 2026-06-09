@@ -17,14 +17,14 @@
     "seed": 0
   },
   "env": {
-    "date_utc": "2026-06-09T07:41:14Z",
+    "date_utc": "2026-06-09T19:59:43Z",
     "machine": "x86_64",
     "numpy": "2.4.6",
     "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
     "python": "3.12.3",
     "seed": 0,
     "tool": "evorare",
-    "version": "0.1.0a1"
+    "version": "0.1.0a2"
   },
   "gate_details": {
     "G1": "hillq0_identity=True chi2_WH[k1=0.025,k5=0.002,k10=0.001,k20=0.000]=True chao1(est=30.0,ci=[22.4,61.7])=True",
@@ -60,6 +60,6 @@
     "g8_null_false_flag": 0.0
   },
   "honest_synthetic_done": true,
-  "n_tests": 89,
+  "n_tests": 93,
   "real_archive_smoke": false
 }

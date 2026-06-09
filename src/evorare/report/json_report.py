@@ -94,5 +94,7 @@ def diagnosis_to_dict(diag: Diagnosis, archive: Archive) -> dict[str, Any]:
 
 def write_json(diag: Diagnosis, archive: Archive, path: str | Path) -> dict[str, Any]:
     payload = diagnosis_to_dict(diag, archive)
-    Path(path).write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    Path(path).write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False), encoding="utf-8"
+    )
     return payload

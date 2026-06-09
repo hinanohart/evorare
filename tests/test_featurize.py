@@ -28,6 +28,12 @@ def test_behavior_same_bin_same_species():
     assert f.featurize(_rec(score=0.83)) != f.featurize(_rec(score=0.88))
 
 
+def test_behavior_negative_zero_same_species_as_zero():
+    # -0.0 and 0.0 are the same phenotype; they must not split into two species.
+    f = BehaviorFeaturizer(ndigits=2)
+    assert f.featurize(_rec(score=-0.0)) == f.featurize(_rec(score=0.0))
+
+
 def test_behavior_distance_euclidean():
     f = BehaviorFeaturizer()
     a = f.descriptor(_rec(score=0.2))
