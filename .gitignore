@@ -1,0 +1,32 @@
+# byte/build
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# venv / tooling caches
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.cache/
+
+# secrets (never commit)
+.env
+.env.*
+*.pem
+*.key
+*_token*
+*secret*
+
+# evorare runtime state (not part of the package)
+.evorare.lock
+.evorare-progress.json
+experiments/_wip/
+
+# large archives (use synth generators or adapters instead of committing data)
+*.jsonl
+!tests/data/*.jsonl

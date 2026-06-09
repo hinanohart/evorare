@@ -1,0 +1,18 @@
+[importlinter]
+root_package = evorare
+
+[importlinter:contract:core-isolated-from-adapters-and-experimental]
+name = Core estimator path must not depend on adapters or experimental
+type = forbidden
+source_modules =
+    evorare.schema
+    evorare.ingest
+    evorare.featurize
+    evorare.diversity
+    evorare.sampling_validity
+    evorare.genealogy
+    evorare.judge
+    evorare.report
+forbidden_modules =
+    evorare.adapters
+    evorare.experimental

@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  quality:
+    name: ${{ matrix.os }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check src tests scripts
+      - name: Types (mypy --strict)
+        run: mypy
+      - name: Import isolation (import-linter)
+        run: lint-imports
+      - name: Tests
+        run: pytest -q
+
+  honesty:
+    name: honest-marketing + prior-art
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: No unsubstantiated marketing claims
+        run: |
+          # Forbidden terms are written with single-char classes (e.g. TMRC[A]) so this guard
+          # file does not itself contain the literal phrases it forbids. Innocuous English such
+          # as "the first numeric metric" is intentionally not banned; only claim forms are.
+          PATTERN='stat[e].of.the.art|\bSOT[A]\b|outperfor[m]|guarantee[d]|robust population diversit[y]|measures semantic diversit[y]|\bTMRC[A]\b|permanen[t]|初[の]|永[続]|\+[0-9]+(\.[0-9]+)?\s*%'
+          if grep -REn "$PATTERN" README.md docs/ src/ ; then
+            echo "HONEST-MARKETING VIOLATION: unsubstantiated claim found"; exit 1
+          fi
+          echo "honest-marketing: clean"
+      - name: Required NON-CLAIM disclaimers present
+        run: |
+          grep -qF "realized-sample diversity only; does not estimate population diversity" README.md || { echo "MISSING NON-CLAIM (population)"; exit 1; }
+          grep -qF "syntactic/structural diversity, not semantic diversity" README.md || { echo "MISSING NON-CLAIM (semantic)"; exit 1; }
+          grep -qiF "synthetic" README.md || { echo "MISSING synthetic disclaimer"; exit 1; }
+          echo "non-claim: present"
+      - name: Prior-art must be disclosed
+        run: |
+          grep -qiF "Chao" README.md && grep -qiF "rarefaction" README.md && grep -qiF "FunSearch" README.md || { echo "MISSING PRIOR-ART"; exit 1; }
+          echo "prior-art: disclosed"
+      - name: No unfilled MEASURED placeholders
+        run: |
+          if grep -REn 'MEASURED@S4' README.md ; then echo "MEASURED placeholder still present"; exit 1; fi
+          echo "placeholders: none"

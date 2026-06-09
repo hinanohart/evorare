@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "evorare"
+version = "0.1.0a1"
+description = "A CPU/offline diagnostic instrument for realized-sample diversity trends in LLM evolutionary-search archives (Hill numbers + Rao quadratic entropy), with sampling-validity routing. Does not estimate population diversity."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "hinanohart" }]
+keywords = ["diversity", "evolutionary-search", "funsearch", "alphaevolve", "hill-numbers", "rao-quadratic-entropy", "early-stopping", "diagnostic"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: OS Independent",
+]
+dependencies = ["numpy>=1.22"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.4", "mypy>=1.8", "import-linter>=2.0", "networkx>=3.0"]
+embed = ["sentence-transformers>=2.2"]
+bench = []
+
+[project.urls]
+Homepage = "https://github.com/hinanohart/evorare"
+Repository = "https://github.com/hinanohart/evorare"
+
+[project.scripts]
+evorare = "evorare.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evorare"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+packages = ["evorare"]
+mypy_path = "src"
+exclude = ['^src/evorare/adapters/', '^src/evorare/experimental/']
+
+[[tool.mypy.overrides]]
+module = ["evorare.adapters.*", "evorare.experimental.*"]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

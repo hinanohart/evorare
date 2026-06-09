@@ -1,0 +1,65 @@
+{
+  "all_gates_passed": true,
+  "config": {
+    "n_boot": 120,
+    "n_gen": 8,
+    "n_per_gen": 36,
+    "n_seed": 20,
+    "scenarios": [
+      "S-NULL",
+      "S-HEALTHY",
+      "S-SATURATE",
+      "S-STATIONARY",
+      "S-EXPLOIT",
+      "S-AGGREGATED",
+      "S-BOTTLENECK"
+    ],
+    "seed": 0
+  },
+  "env": {
+    "date_utc": "2026-06-09T07:41:14Z",
+    "machine": "x86_64",
+    "numpy": "2.4.6",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "seed": 0,
+    "tool": "evorare",
+    "version": "0.1.0a1"
+  },
+  "gate_details": {
+    "G1": "hillq0_identity=True chi2_WH[k1=0.025,k5=0.002,k10=0.001,k20=0.000]=True chao1(est=30.0,ci=[22.4,61.7])=True",
+    "G2": "AUC=1.000 healthy~+1.88 saturate~-1.89",
+    "G3": "detect_within2=1.00 collapse_rate=1.00 stationary_fpr=0.00",
+    "G4": "not_saturating_rate=1.00",
+    "G5": "resolution_disagreement_rate=1.00",
+    "G6": "exploit_indeterminate_rate=1.00",
+    "G7": "genealogy_skipped=True behavior_verdict_unchanged=True diversity_verdict=HEALTHY",
+    "G8": "aggregated_excluded_rate=1.00 null_false_flag_rate=0.00",
+    "G9": "byte_identical=True"
+  },
+  "gates": {
+    "G1": true,
+    "G2": true,
+    "G3": true,
+    "G4": true,
+    "G5": true,
+    "G6": true,
+    "G7": true,
+    "G8": true,
+    "G9": true
+  },
+  "headline": {
+    "g2_auc_healthy_vs_saturate": 1.0,
+    "g3_bottleneck_detect_within2": 1.0,
+    "g3_collapse_rate": 1.0,
+    "g3_stationary_false_collapse": 0.0,
+    "g4_not_saturating_rate": 1.0,
+    "g5_resolution_disagreement": 1.0,
+    "g6_exploit_indeterminate": 1.0,
+    "g8_aggregated_coverage_excluded": 1.0,
+    "g8_null_false_flag": 0.0
+  },
+  "honest_synthetic_done": true,
+  "n_tests": 89,
+  "real_archive_smoke": false
+}
