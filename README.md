@@ -3,12 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/hinanohart/evorare/actions/workflows/ci.yml/badge.svg)](https://github.com/hinanohart/evorare/actions/workflows/ci.yml)
 
-**evorare** is a CPU / offline diagnostic instrument that describes the
-*realized-sample diversity trend* of an LLM evolutionary-search archive
-(FunSearch / AlphaEvolve / ShinkaEvolve / OpenEvolve) using ecology
-**Hill numbers** + **Rao quadratic entropy**, and routes which estimators are
-statistically valid for *this* archive before they are allowed to drive an
-early-stopping decision.
+**A CPU-only diagnostic instrument that measures realized-sample diversity trends in LLM evolutionary-search archives.**
+
+`evorare` reads a JSON-Lines archive produced by FunSearch, AlphaEvolve, ShinkaEvolve, OpenEvolve, or any compatible evolutionary-search framework and computes **Hill numbers** and **Rao quadratic entropy** across generations. It then routes which estimators are statistically valid for the archive and emits a diversity-trend verdict (`HEALTHY`, `SATURATING`, `GENEALOGY-COLLAPSE`, `INDETERMINATE`, or `DESCRIPTIVE`).
 
 > **What it is — and is not.**
 > evorare **describes realized-sample diversity only; does not estimate population diversity.**
@@ -18,22 +15,53 @@ early-stopping decision.
 
 No model calls. No GPU. Core dependency: **numpy** only.
 
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[archive.jsonl] --> B[ingest / schema]
+    B --> C[featurize]
+    C --> C1[ast_hash]
+    C --> C2[behavior]
+    C --> C3[ngram]
+    C1 --> D[diversity]
+    C2 --> D
+    C3 --> D
+    D --> E[sampling_validity routing]
+    E --> F[judge / Diagnosis]
+    B --> G[genealogy]
+    G --> F
+    F --> H[report: JSON + SVG]
+    F --> I[gate G1..G9]
+```
+
+Data flows left to right: raw records are ingested, featurized into species histograms, passed through Hill-number and Rao-Q computation, filtered by the sampling-validity router, then merged with optional genealogy analysis to produce a final verdict and structured report.
+
+---
+
 ## Install
 
 ```bash
-pip install evorare            # core (numpy only); the convert adapters are built in
+pip install evorare            # core (numpy only); convert adapters are built in
 pip install "evorare[embed]"   # + optional semantic-embedding featurizer (experimental)
 ```
 
-## Usage
+## Quickstart
 
 ```bash
+# Diagnose a JSON-Lines archive
 evorare diagnose archive.jsonl --featurizer behavior,ast --out result.json --svg out.svg
-evorare gate                   # run sensitivity gates G1..G9 (exit 0/1)
-evorare convert openevolve <checkpoint_dir> -o archive.jsonl   # optional adapter
+
+# Run sensitivity gates G1..G9 (exits 0 on all pass, 1 otherwise)
+evorare gate
+
+# Convert a framework checkpoint to the evorare JSON-Lines format
+evorare convert openevolve <checkpoint_dir> -o archive.jsonl
 ```
 
-Input is generic JSON-Lines (one record per line):
+**Archive format** — one JSON record per line:
 
 ```json
 {"id": "p17", "code": "def f(): ...", "score": 0.83, "generation": 4, "parent_id": "p9", "island_id": 1}
@@ -41,16 +69,42 @@ Input is generic JSON-Lines (one record per line):
 
 Required fields: `id`, `code`, `score`. Optional: `generation`, `parent_id`, `island_id`.
 
-## What it measures
+---
 
-- **Primary stopping signal:** the generation trend of the **Hill q1 effective number** and
-  **Rao quadratic entropy** (both descriptive statistics of the realized sample).
-- **Sampling-validity routing:** under strong selection the Good-Turing coverage and Chao
-  estimators are *not* valid; evorare detects this and excludes them from the stopping decision.
-- **Genealogy (only when `parent_id` is present):** lineage survivorship and genealogical
-  mean-pairwise-distance, computed exactly from the known parent links.
+## How it works
 
-### Validation on synthetic ground truth
+### Diversity metrics
+
+evorare featurizes each program into a discrete type (species) and computes per-generation histograms. From those histograms it derives:
+
+- **Hill q0** — richness (count of distinct types)
+- **Hill q1** — Shannon effective number (exponential of entropy); the primary stopping signal
+- **Hill q2** — Simpson effective number
+- **Rao quadratic entropy (Q)** — pairwise-distance-weighted diversity; second stopping signal
+
+Slopes and 95 % bootstrap confidence intervals are computed from the per-generation series. A verdict requires at least 3 generations; with fewer generations the result is `DESCRIPTIVE`.
+
+### Sampling-validity routing
+
+Under strong selection, Good-Turing coverage and Chao estimators are not valid. `evorare` detects this automatically (via the `sampling_validity` module) and excludes those estimators from the stopping decision rather than silently propagating invalid statistics.
+
+### Genealogy (optional)
+
+When `parent_id` is present in the archive, evorare builds a lineage graph, computes root-lineage survivorship per generation, and bootstraps the survivorship slope. A significant decline combined with a relative drop above 30 % triggers `GENEALOGY-COLLAPSE`.
+
+### Verdict rules
+
+| Verdict | Condition |
+|---|---|
+| `HEALTHY` | Hill q1 CI lower bound > 0 and Rao Q not significantly decreasing |
+| `SATURATING` | Hill q1 CI upper bound < 0 and Rao Q not significantly increasing |
+| `GENEALOGY-COLLAPSE` | Survivorship slope CI < 0 and relative lineage drop > 30 % |
+| `INDETERMINATE` | Directional conflict between featurizer resolutions |
+| `DESCRIPTIVE` | Fewer than 3 generations, or insertion-order proxy used |
+
+---
+
+## Validation on synthetic ground truth
 
 All numbers below are produced by `evorare gate` / `python scripts/run_bench.py` and stored in
 [`results/v0.1.0a2_metrics.json`](results/v0.1.0a2_metrics.json) (seed=0, 20 seeds/scenario,
@@ -65,13 +119,14 @@ framework results.
 | G8 — exclude coverage when selection breaks it (S-AGGREGATED) | **1.00** |
 | G8 — false exclusion under uniform sampling (S-NULL) | **0.00** |
 
-The test suite has **93 tests** (`pytest`), all passing on Ubuntu and Windows for Python
-3.10–3.12.
+The test suite has **93 tests** (`pytest`), all passing on Ubuntu and Windows for Python 3.10–3.12.
 
 > The Hill q1 *slope* point estimate is a plug-in value; its confidence interval is a bootstrap
 > percentile interval and may not be centred on the point estimate, because the Hill q1 plug-in
 > is downward-biased under finite-sample resampling (a known property of diversity estimators).
 > The verdict uses the interval, which is the conservative, statistically meaningful quantity.
+
+---
 
 ## Prior art & honest limits
 
@@ -80,6 +135,8 @@ See [docs/limits.md](docs/limits.md). evorare builds on established ecology esti
 the contribution is their transplant to LLM evolutionary-search archives plus the
 sampling-validity routing. Prior diversity management inside **FunSearch** / AlphaEvolve uses
 island models and behavior descriptors; evorare is a framework-agnostic external diagnostic.
+
+---
 
 ## License
 
