@@ -34,7 +34,6 @@ flowchart TD
     B --> G[genealogy]
     G --> F
     F --> H[report: JSON + SVG]
-    F --> I[gate G1..G9]
 ```
 
 Data flows left to right: raw records are ingested, featurized into species histograms, passed through Hill-number and Rao-Q computation, filtered by the sampling-validity router, then merged with optional genealogy analysis to produce a final verdict and structured report.
