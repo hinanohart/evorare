@@ -17,29 +17,6 @@ No model calls. No GPU. Core dependency: **numpy** only.
 
 ---
 
-## Architecture
-
-```mermaid
-flowchart TD
-    A[archive.jsonl] --> B[ingest / schema]
-    B --> C[featurize]
-    C --> C1[ast_hash]
-    C --> C2[behavior]
-    C --> C3[ngram]
-    C1 --> D[diversity]
-    C2 --> D
-    C3 --> D
-    D --> E[sampling_validity routing]
-    E --> F[judge / Diagnosis]
-    B --> G[genealogy]
-    G --> F
-    F --> H[report: JSON + SVG]
-```
-
-Data flows top to bottom: raw records are ingested, featurized into species histograms, passed through Hill-number and Rao-Q computation, filtered by the sampling-validity router, then merged with optional genealogy analysis to produce a final verdict and structured report.
-
----
-
 ## Install
 
 ```bash
@@ -67,6 +44,29 @@ evorare convert openevolve <checkpoint_dir> -o archive.jsonl
 ```
 
 Required fields: `id`, `code`, `score`. Optional: `generation`, `parent_id`, `island_id`.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[archive.jsonl] --> B[ingest / schema]
+    B --> C[featurize]
+    C --> C1[ast_hash]
+    C --> C2[behavior]
+    C --> C3[ngram]
+    C1 --> D[diversity]
+    C2 --> D
+    C3 --> D
+    D --> E[sampling_validity routing]
+    E --> F[judge / Diagnosis]
+    B --> G[genealogy]
+    G --> F
+    F --> H[report: JSON + SVG]
+```
+
+Data flows top to bottom: raw records are ingested, featurized into species histograms, passed through Hill-number and Rao-Q computation, filtered by the sampling-validity router, then merged with optional genealogy analysis to produce a final verdict and structured report.
 
 ---
 
