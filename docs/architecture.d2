@@ -1,0 +1,44 @@
+direction: down
+explanation: |md
+  ### evorare
+  **A CPU-only diagnostic instrument that measures realized-sample diversity trends in LLM evolutionary-search archives.**
+| {near: top-center}
+
+archive: "① archive.jsonl" {shape: cylinder; style: {fill: "#6366f1"; font-color: "#ffffff"; stroke: "#4338ca"; bold: true; font-size: 18}}
+ingest: "② ingest / schema" {style: {fill: "#0ea5e9"; font-color: "#ffffff"; stroke: "#0369a1"; bold: true; font-size: 18}}
+
+featurize_zone: "③ Featurizers" {
+  style: {fill: "#fffbeb"; stroke: "#f59e0b"; font-color: "#92400e"; bold: true; font-size: 16}
+  ast: "ast_hash"
+  behavior: "behavior"
+  ngram: "ngram"
+  ast.style: {fill: "#fef3c7"; font-color: "#92400e"}
+  behavior.style: {fill: "#fef3c7"; font-color: "#92400e"}
+  ngram.style: {fill: "#fef3c7"; font-color: "#92400e"}
+}
+
+diversity: "④ diversity\nHill numbers + Rao entropy" {style: {fill: "#dcfce7"; font-color: "#065f46"; stroke: "#10b981"; bold: true; font-size: 16}}
+routing: "⑤ sampling_validity routing\nestimator selection" {style: {fill: "#dcfce7"; font-color: "#065f46"; stroke: "#10b981"; bold: true; font-size: 16}}
+genealogy: "genealogy\nlineage graph" {style: {fill: "#fef3c7"; font-color: "#92400e"; stroke: "#f59e0b"; bold: true; font-size: 15}}
+judge: "⑥ judge / Diagnosis\nHEALTHY / SATURATING / COLLAPSE" {style: {fill: "#0ea5e9"; font-color: "#ffffff"; stroke: "#0369a1"; bold: true; font-size: 16}}
+report: "⑦ report: JSON + SVG" {shape: cylinder; style: {fill: "#fdf2f8"; font-color: "#9d174e"; stroke: "#ec4899"; bold: true; font-size: 16}}
+
+archive -> ingest: "① load"
+ingest -> featurize_zone.ast: "② featurize"
+ingest -> featurize_zone.behavior: "② featurize"
+ingest -> featurize_zone.ngram: "② featurize"
+featurize_zone.ast -> diversity: "④ compute"
+featurize_zone.behavior -> diversity: "④ compute"
+featurize_zone.ngram -> diversity: "④ compute"
+diversity -> routing: "⑤ route"
+routing -> judge: "⑥ diagnose"
+ingest -> genealogy: "② trace"
+genealogy -> judge: "⑥ inform"
+judge -> report: "⑦ emit"
+
+legend: "Legend" {
+  near: bottom-center
+  style: {fill: "#f8fafc"; stroke: "#cbd5e1"; font-size: 13}
+  e: "● entry"; c: "● core"; p: "● featurizer"; b: "● lineage"; d: "● output"
+  e.style.font-color: "#4338ca"; c.style.font-color: "#0369a1"; p.style.font-color: "#f59e0b"; b.style.font-color: "#10b981"; d.style.font-color: "#ec4899"
+}

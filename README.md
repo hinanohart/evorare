@@ -19,22 +19,9 @@ No model calls. No GPU. Core dependency: **numpy** only.
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    A[archive.jsonl] --> B[ingest / schema]
-    B --> C[featurize]
-    C --> C1[ast_hash]
-    C --> C2[behavior]
-    C --> C3[ngram]
-    C1 --> D[diversity]
-    C2 --> D
-    C3 --> D
-    D --> E[sampling_validity routing]
-    E --> F[judge / Diagnosis]
-    B --> G[genealogy]
-    G --> F
-    F --> H[report: JSON + SVG]
-```
+<div align="center">
+  <img src="docs/architecture.png" alt="evorare architecture" width="840">
+</div>
 
 Data flows top to bottom: raw records are ingested, featurized into species histograms, passed through Hill-number and Rao-Q computation, filtered by the sampling-validity router, then merged with optional genealogy analysis to produce a final verdict and structured report.
 
@@ -140,3 +127,4 @@ island models and behavior descriptors; evorare is a framework-agnostic external
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
